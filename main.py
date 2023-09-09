@@ -21,24 +21,24 @@ file_dataset = 'dataset_tweet_sentiment_pilkada_DKI_2017.csv'
 data = pd.read_csv(file_dataset)
 
 #menampilkan head data dan info data
-# print(data.head())
-# print(data.info())
+print(data.head())
+print(data.info())
 
 
 # menampilkan plot dan jenis data
-# print('\nJumlah Data Berdasarkan Pasangan Calon:')
-# print(data.groupby('Pasangan Calon').size())
+print('\nJumlah Data Berdasarkan Pasangan Calon:')
+print(data.groupby('Pasangan Calon').size())
 
-# print('\nJumlah Data Sentiment Positive:')
+print('\nJumlah Data Sentiment Positive:')
 dt = data.query("Sentiment == 'positive'")
-# print(dt.groupby('Pasangan Calon').size())
+print(dt.groupby('Pasangan Calon').size())
 
-# print('\nJumlah Data Sentiment Negative:')
+print('\nJumlah Data Sentiment Negative:')
 dt = data.query("Sentiment == 'negative'")
-# print(dt.groupby('Pasangan Calon').size())
+print(dt.groupby('Pasangan Calon').size())
 
 data['Sentiment'].value_counts().plot(kind='bar')
-# plt.show()
+plt.show()
 
 
 #pembersihan data dengan regex
@@ -52,13 +52,13 @@ def remove_punct(sent):
     return ' '.join(re.findall(r'\w+', sent.lower()))
     
 data['text'] = data['Text Tweet'].apply(lambda x:remove_punct(remove_sites(remove_at_hash(x))))
-# print(data.head())
+print(data.head())
 
 #lable encoder
 le = preprocessing.LabelEncoder()
 le.fit(data['Sentiment'])
 data['label'] = le.transform(data['Sentiment'])
-# print(data)
+print(data)
 
 #split data & tf-idf
 X= data['text']
@@ -66,25 +66,25 @@ y= data['label']
 
 # split data (80:20)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size= 0.2, random_state= 25)
-# print(X_train[0],'-', y_train[0])
+print(X_train[0],'-', y_train[0])
 
 count_vectorizer = CountVectorizer()
 
 # Menerapkan CountVectorizer pada data latih dan data uji
 bow_train_vectors = count_vectorizer.fit_transform(X_train)
 bow_test_vectors = count_vectorizer.transform(X_test)
-# print(tfidf_train_vectors[0])
+print(tfidf_train_vectors[0])
 
 
 #kontrol parameter SVM
 pKernel = ['linear', 'rbf'] # kernel SVM
-pC = [0.1, 1.0, 10.0, 100.0] # nilai C (hyperplane)
-ik = 1# indeks untuk kernel
+pC = [0.1, 1.0, 10.0] # nilai C (hyperplane)
+pGamma = ['scale',0.1,0.001,0.0001]
+ik = 0# indeks untuk kernel
 ic = 2# indeks untuk nilai C
 fs = True # seleksi fitur, False=None, True=Chi-Square
-pGamma = ['scale',1, 0.1, 0.001, 0.0001]
 ig = 0
-# print(f'Parameter SVM: Kernel={pKernel[ik]}, C={pC[ic]} Gamma= {pGamma[ig]}')
+print(f'Parameter SVM: Kernel={pKernel[ik]}, C={pC[ic]} Gamma= {pGamma[ig]}')
 
 
 #pemilihan seleksi fitur
@@ -108,7 +108,7 @@ y_pred = svm_classifier.predict(bow_test_vectors) # testing
 print(classification_report(y_test,y_pred))
 cnf_matrix = confusion_matrix(y_test,y_pred)
 print('Confusion Matrix (TN, FP, FN, TP):')
-# print(cnf_matrix)
+print(cnf_matrix)
 
 
 #visualisasi confusion matrix
@@ -117,7 +117,7 @@ group_counts = ["{0:0.0f}".format(value) for value in cnf_matrix.flatten()]
 labels = [f"{v1}\n{v2}" for v1, v2 in zip(group_names,group_counts)]
 labels = np.asarray(labels).reshape(2,2)
 sns.heatmap(cnf_matrix, annot=labels, fmt='', cmap='Blues')
-# plt.show()
+plt.show()
 
 #statistik hasil percobaan
 print(f'Sel. Fitur\t: {fs_label}')
@@ -131,7 +131,7 @@ print('F1-Score\t: {:.2}'.format(f1_score(y_test, y_pred)))
 
 
 
-#menyimmpan model
+#menyimpan model
 filename = f'model-svm-{fs_label}-{pKernel[ik]}-{pC[ic]}.pickle'
 pickle.dump(svm_classifier, open(filename, 'wb'))
 vectorizer = count_vectorizer
